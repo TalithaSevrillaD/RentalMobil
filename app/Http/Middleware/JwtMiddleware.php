@@ -31,4 +31,5 @@ class JwtMiddleware extends BaseMiddleware
         }
         return $next($request);
     }
+
 }

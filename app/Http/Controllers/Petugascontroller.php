@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use Auth;
 use App\User;
+use DB;
 
 class Petugascontroller extends Controller
 {
@@ -75,5 +76,67 @@ class Petugascontroller extends Controller
         }
 
         return response()->json(compact('user'));
+    }
+
+    public function update($id, Request $req)
+    {
+        if(Auth::user()->status=="admin"){
+            $validator = Validator::make($req->all(), [
+                'nama_petugas'=>'required',
+                'username'=>'required',
+                'password'=>'required',
+                'status'=>'required'
+            ]);
+
+            if($validator->fails()){
+                return Response()->json($validator->errors());
+            }
+
+            $ubah = User::where('id', $id)->update([
+                'nama_petugas' => $req->get('nama_petugas'),
+                'username'=>$req->get('username'),
+                'password' =>Hash::make($req->get('password')),
+                'status'=>$req->get('status')
+            ]);
+            if($ubah){
+                $status = "1";
+                $message = "Data Petugas berhasil diubah.";
+            } else {
+                $status = "0";
+                $message = "Data Petugas tidak berhasil diubah!";
+            }
+            return Response()->json(compact('status', 'message'));
+        } else {
+            echo "Maaf! Data Petugas hanya dapat diakses oleh admin.";
+        }
+    }
+
+    public function destroy($id)
+    {
+        if(Auth::user()->status=="admin") {
+            $hapus = User::where('id', $id)->delete();
+            if($hapus){
+                $status = "1";
+                $message = "Data Petugas berhasil dihapus.";
+            } else {
+                $status = "0";
+                $message = "Data Petugas tidak berhasil dihapus!";
+            }
+            return Response()->json(compact('status', 'message'));
+        } else {
+            echo "Maaf! Data Petugas hanya dapat diakses oleh admin.";
+        }
+    }
+
+    public function show()
+    {
+        if(Auth::user()->status=="admin"){
+            $petugas = User::all();
+            $status="1";
+
+            return Response()->json(compact('status', 'petugas'));
+        } else {
+            echo "Maaf! Data Petugas hanya dapat diakses oleh admin.";
+        }
     }
 }
